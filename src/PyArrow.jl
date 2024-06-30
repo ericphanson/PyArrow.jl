@@ -22,9 +22,11 @@ export pyarrow, PyArrowTable
 #####
 
 const pyarrow = PythonCall.pynew()
+const numpy = PythonCall.pynew()
 
 function __init__()
     PythonCall.pycopy!(pyarrow, pyimport("pyarrow"))
+    PythonCall.pycopy!(numpy, pyimport("numpy"))
     return nothing
 end
 
@@ -47,7 +49,9 @@ function table(src; metadata=nothing, nthreads=nothing)
 end
 
 function column_to_arrow(v)
-    if Missing <: eltype(v)
+    if v isa PyArray
+        return Py(v)
+    elseif Missing <: eltype(v)
         return Py(replace(v, missing => nothing))
     elseif isbitstype(eltype(v))
         return Py(v).to_numpy(; copy=false)
@@ -69,8 +73,19 @@ PythonCall.ispy(x::PyArrowTable) = true
 PythonCall.Py(x::PyArrowTable) = x.py
 
 function column_from_arrow(v)
-    return ChainedVector([PyArray(v.chunk(i).to_numpy(; zero_copy_only=false); copy=false)
-                          for i in 0:(pyconvert(Int, v.num_chunks) - 1)])
+    n = pyconvert(Int, v.num_chunks)
+
+    get_chunk = i -> begin
+        w = v.chunk(i)
+        w = w.to_numpy(; zero_copy_only=false)
+        return PyArray(w; copy=false)
+    end
+
+    if n == 1
+        return get_chunk(0)
+    else
+        return ChainedVector([get_chunk(i) for i in 0:(n - 1)])
+    end
 end
 
 DataAPI.ncol(x::PyArrowTable) = x.py.num_columns

@@ -24,7 +24,12 @@ After that, it's just a Python package accessible via `using PyArrow` in
 Julia. The usual conversion rules and behaviors from PythonCall apply.
 The [tests](test/runtests.jl) test a few conversion gotchas.
 
-PyArrow supplies one helper function, `PyArrow.table`, to convert Tables.jl-compatible tables to pyarrow's in-memory format.
+PyArrow also supplies two helper functions:
+
+- `PyArrow.table`, to convert Tables.jl-compatible tables to pyarrow's in-memory format
+- `PyArrowTable`, to wrap pyarrow tables in a Tables.jl-compatible interface
+
+These are zero-copy when possible, but it is not guaranteed. See the [tests](./test/runtests.jl) for some cases of what works and what doesn't work.
 
 ## Examples
 
