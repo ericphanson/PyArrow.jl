@@ -10,7 +10,12 @@ Supports:
 - the Tables.jl columnar interface, so e.g. `DataFrame(table)` should work. The columns are `PyArray`'s (i.e. `AbstractVector`'s pointing to python objects), or `ChainedVector`'s with `PyArray` subcomponents (if there is more than 1 batch).
 - DataAPI's `ncol` and `nrow` accessors.
 
-Currently does not support DataAPI's metadata-related functions, but support may be added later.
+Does not yet support:
+
+- DataAPI's metadata-related functions
+- `Tables.partitions` to iterate record batches
+
+This functionality may be added in future non-breaking releases.
 """
 struct PyArrowTable <: PyTable
     py::Py
