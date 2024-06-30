@@ -6,13 +6,13 @@
 ## Installation
 
 This package uses [`PythonCall`](https://cjdoris.github.io/PythonCall.jl) to make
-[pyarrow](https://arrow.apache.org/docs/python/index.html) and [pandas](https://pandas.pydata.org/) available from within Julia. Unsurprisingly,
+[pyarrow](https://arrow.apache.org/docs/python/index.html) available from within Julia. Unsurprisingly,
 pyarrow and its dependencies need to be installed in order for this to work
 and PyArrow.jl will attempt to install when the package is built: this should happen
 more or less automatically via [`CondaPkg`](https://github.com/cjdoris/CondaPkg.jl).
 You can configure various options via `CondaPkg`.
 
-See [Arrow.jl](https://github.com/apache/arrow-julia) for a pure-Julia alternative.
+See [Arrow.jl](https://github.com/apache/arrow-julia) for a pure-Julia alternative. PyArrow.jl can be useful for testing cross-language interoperability for Arrow.jl-powered serialization.
 
 ## Usage
 
