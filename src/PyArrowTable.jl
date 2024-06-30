@@ -47,8 +47,8 @@ function column_from_arrow(v)
     end
 end
 
-DataAPI.ncol(x::PyArrowTable) = x.py.num_columns
-DataAPI.nrow(x::PyArrowTable) = x.py.num_rows
+DataAPI.ncol(x::PyArrowTable) = pyconvert(Int, x.py.num_columns)
+DataAPI.nrow(x::PyArrowTable) = pyconvert(Int, x.py.num_rows)
 
 Tables.columns(df::PyArrowTable) = df
 Tables.columnnames(df::PyArrowTable) = map(n -> pyconvert(Symbol, n), df.py.column_names)
