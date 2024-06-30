@@ -3,6 +3,13 @@ using Test, Aqua
 using Tables
 using DataAPI
 using DataFrames
+using CondaPkg
+
+# Print packages for CI logs
+CondaPkg.withenv() do
+    run(`micromamba list`)
+end
+
 
 @testset "PyArrow.jl" begin
     jl_table = (; a=[rand(2); NaN], b=["a", "b", "c"])
