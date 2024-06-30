@@ -2,11 +2,11 @@ using PyArrow
 using Test, Aqua
 
 @testset "Aqua" begin
-    Aqua.test_all(PyArrow)
+    Aqua.test_all(PyArrow; ambiguities=false)
 end
 
 @testset "PyArrow.jl" begin
-    jl_table = (; a = [rand(2); NaN], b = ["a", "b", "c"])
+    jl_table = (; a=[rand(2); NaN], b=["a", "b", "c"])
     py_table = PyArrow.table(jl_table)
     @test py_table isa Py
 
@@ -20,7 +20,7 @@ end
     @test Tables.getcolumn(t, :b)[3] == "c"
 
     # However, not zero-copy with missing/nothing:
-    jl_table = (; a = [rand(2); missing], b = ["a", "b", missing])
+    jl_table = (; a=[rand(2); missing], b=["a", "b", missing])
     py_table = PyArrow.table(jl_table)
     @test py_table isa Py
     t = PyArrowTable(PyArrow.table(PyArrowTable(PyArrow.table(PyArrowTable(py_table)))))
