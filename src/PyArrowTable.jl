@@ -5,9 +5,12 @@
 Wraps the python object `py` which corresponds to a pyarrow table to provide a Tables.jl-compatible interface.
 
 Supports:
-- Property access to access the properties of the underlying pyarrow table (plus `table.py` to access the raw pyarrow table object)
-- Indexing to access columns (`table[0]`, `table["col_name"]`)
-- the Tables.jl columnular interface, so e.g. `DataFrame(table)` should work.
+- Property access to access the properties of the underlying pyarrow table (plus `table.py` to access the raw pyarrow table object). These yields PythonCall `Py` objects, which may need to be converted with `pyconvert`.
+- Indexing to access columns (`table[0]`, `table["col_name"]`). This also yields raw `Py` objects (which are not even `<: AbstractVector`).
+- the Tables.jl columnar interface, so e.g. `DataFrame(table)` should work. The columns are `PyArray`'s (i.e. `AbstractVector`'s pointing to python objects), or `ChainedVector`'s with `PyArray` subcomponents (if there is more than 1 batch).
+- DataAPI's `ncol` and `nrow` accessors.
+
+Currently does not support DataAPI's metadata-related functions, but support may be added later.
 """
 struct PyArrowTable <: PyTable
     py::Py

@@ -47,7 +47,7 @@ function column_to_arrow(v)
 end
 
 """
-    PyArrow.table(src; metadata=nothing, nthreads=nothing)
+    PyArrow.table(src; metadata=nothing, nthreads=nothing) -> Py
 
 A wrapper around `pyarrow.table` which converts a Tables.jl-compatible table
 to a pyarrow table.
