@@ -98,7 +98,7 @@ Notes:
 
 * For comparison, Arrow.jl's `Table` is included as `Arrow.Table` in the above diagram.
 * `PythonCall.pyconvert` needs to be called on elements of the table, not the entire table (see the `PyArrowTable` docstring for an example).
-* `PyArrow.table` can also be used on a "Julia table with Julia objects", but on the python side those objects may appear as wrapped in `juliacall.AnyValue`s. and such
+* `PyArrow.table` can also be used on a "Julia table with Julia objects", but on the python side those objects may appear as wrapped in `juliacall.AnyValue`'s and such
 
 ## Examples
 
