@@ -14,6 +14,52 @@ You can configure various options via `CondaPkg`.
 
 See [Arrow.jl](https://github.com/apache/arrow-julia) for a pure-Julia alternative. PyArrow.jl can be useful for testing cross-language interoperability for Arrow.jl-powered serialization.
 
+## Alternatives
+
+[Arrow.jl](https://github.com/apache/arrow-julia) provides a Julia-native implementation of reading and writing the Arrow spec, and in most cases PyArrow.jl should only be used if Arrow.jl cannot be for some reason.
+
+PyArrow.jl was primarily written to make it easier to test Julia packages (like Arrow.jl) against pyarrow by providing a convenient wrapper. It can also be used to read/write arrow (and parquet) files from Julia and interop with python, but this package is immature compared to Arrow.jl, and unfortunately marshalling types like datetimes between Julia and Python is not always easy.
+
+Even if you are using PythonCall.jl already and are getting an Arrow-format table via Python code (e.g. Snowflake connector), if you want to use it from Julia, it may be better to use Arrow.jl. After all, Arrow is a great IPC format. For example:
+
+```julia-repl
+# Simulate obtaining a pyarrow table in python; here we just read it off disk and write it to a buffer:
+julia> feather = pyimport("pyarrow.feather");
+
+julia> table = feather.read_table(joinpath(pkgdir(PyArrow, "test", "test_tables"), "datetimes.arrow"))
+Python:
+pyarrow.Table
+ID: string
+LAST_UPDATED_AT: timestamp[ns, tz=UTC]
+BIRTH_LOCAL_TIME: time64[us]
+BIRTH_UTC_OFFSET: string
+DEATH_LOCAL_DATE: date32[day]
+DEATH_LOCAL_TIME: time64[us]
+----
+ID: [["aae5129e-dc81-441b-be91-9b1c97fbc26f","2fd56154-ec62-4d1d-a4a8-1b7eb5a9e908","8a01632f-bffb-46fb-b4cc-cd2bb0db5a4d","47bc4ff1-10f7-4803…
+LAST_UPDATED_AT: [[2024-01-03 22:05:33.470000000Z,2024-01-03 22:05:33.470000000Z,2024-01-03 22:05:33.470000000Z,2024-01-03 22:05:33.470000000Z…
+BIRTH_LOCAL_TIME: [[21:34:15.000000,10:34:58.000000,15:44:06.000000,07:36:39.000000,17:19:06.000000,14:33:00.000000,09:00:50.000000,05:35:19.0…
+BIRTH_UTC_OFFSET: [[null,null,null,null,null,null,null,null,null,null]]
+DEATH_LOCAL_DATE: [[null,null,null,null,null,null,null,null,null,null]]
+DEATH_LOCAL_TIME: [[null,null,null,null,null,null,null,null,null,null]]
+
+julia> io = IOBuffer()
+IOBuffer(data=UInt8[...], readable=true, writable=true, seekable=true, append=false, size=0, maxsize=Inf, ptr=1, mark=-1)
+
+julia> feather.write_feather(table, Py(io))
+Python: None
+
+# now `io` contains arrow data, which we can read into Julia objects using Arrow.jl:
+julia> jl = Arrow.Table(seekstart(io))
+Arrow.Table with 10 rows, 6 columns, and schema:
+ :ID                Union{Missing, String}
+ :LAST_UPDATED_AT   Union{Missing, ZonedDateTime}
+ :BIRTH_LOCAL_TIME  Union{Missing, Time}
+ :BIRTH_UTC_OFFSET  Union{Missing, String}
+ :DEATH_LOCAL_DATE  Union{Missing, Arrow.Date{Arrow.Flatbuf.DateUnit.DAY, Int32}}
+ :DEATH_LOCAL_TIME  Union{Missing, Time}
+```
+
 ## Usage
 
 In the same philosophy as PythonCall, this allows for the transparent use of
