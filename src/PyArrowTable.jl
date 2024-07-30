@@ -18,7 +18,8 @@ Does not yet support:
 
 This functionality may be added in future non-breaking releases.
 
-Consider:
+## Example
+
 ```julia
 using DataFrames, PyArrow
 feather = pyimport("pyarrow.feather")
