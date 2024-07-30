@@ -77,6 +77,29 @@ PyArrow also supplies two helper functions:
 
 These are zero-copy when possible, but it is not guaranteed. See the [tests](./test/runtests.jl) for some cases of what works and what doesn't work.
 
+The following diagram shows how `PyArrow.table` and `PyArrowTable` fit in:
+```mermaid
+---
+title: Arrow data conversions
+---
+flowchart TD
+    arr[Arrow data]
+    py[Python table]
+    jl2[Julia table with Julia objects]
+    jl1[Julia table with python objects]
+    arr -->|pyarrow.feather.read_feather|py;
+    arr --> |Arrow.Table|jl2;
+    py --> |PyArrowTable|jl1;
+    jl1 --> |PythonCall.pyconvert|jl2;
+    jl1 --> |PyArrow.table|py;
+```
+
+Notes:
+
+* For comparison, Arrow.jl's `Table` is included as `Arrow.Table` in the above diagram.
+* `PythonCall.pyconvert` needs to be called on elements of the table, not the entire table (see the `PyArrowTable` docstring for an example).
+* `PyArrow.table` can also be used on a "Julia table with Julia objects", but on the python side those objects may appear as wrapped in `juliacall.AnyValue`s. and such
+
 ## Examples
 
 Note: see the tests for some more examples, especially with more Julia interop.
