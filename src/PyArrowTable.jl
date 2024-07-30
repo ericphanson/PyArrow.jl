@@ -16,6 +16,16 @@ Does not yet support:
 - `Tables.partitions` to iterate record batches
 
 This functionality may be added in future non-breaking releases.
+
+Consider:
+```julia
+using DataFrames, PyArrow
+feather = pyimport("pyarrow.feather")
+table = feather.read_table("table.arrow") # example
+df = DataFrame(PyArrowTable(table)) # now we have a DataFrame with Py types
+
+df_jl = mapcols(v -> pyconvert.(Any, v), df) # now we have Julia types
+```
 """
 struct PyArrowTable <: PyTable
     py::Py
@@ -45,7 +55,15 @@ function column_from_arrow(v)
 
     get_chunk = i -> begin
         w = v.chunk(i).to_numpy(; zero_copy_only=false)
-        return PyArray(w; copy=false)
+        # We special case `np.datetime64` since naive conversion fails
+        # Note we end up converting to julia, then back to python!
+        # This way the output of this function will be readable by Julia,
+        # and we output python objects unconditionally.
+        if Bool(np.issubdtype(w.dtype, np.datetime64))
+            return PyArray(Py(map(convert_numpy_datetime64, w)))
+        else
+            return PyArray(w; copy=false)
+        end
     end
 
     if n == 1
@@ -67,4 +85,19 @@ end
 
 function Tables.getcolumn(df::PyArrowTable, nm::Symbol)
     return column_from_arrow(df.py[pystr(String(nm))])
+end
+
+function convert_numpy_datetime64(x)
+    # Julia's DateTime only has microsecond precision,
+    # so convert to microseconds
+    py_ms = np.datetime64(x, "ms")
+
+    # Not-a-time maps to missing
+    if Bool(np.isnat(py_ms))
+        return missing
+    end
+    # Convert to an integer
+    ms = pyconvert(Int, py_ms.astype(np.dtype("int")))
+    # unix2datetime expects seconds:
+    return unix2datetime(ms / 1000)
 end
