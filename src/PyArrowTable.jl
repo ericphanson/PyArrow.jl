@@ -9,6 +9,7 @@ Supports:
 - Indexing to access columns (`table[0]`, `table["col_name"]`). This also yields raw `Py` objects (which are not even `<: AbstractVector`).
 - the Tables.jl columnar interface, so e.g. `DataFrame(table)` should work. The columns are `PyArray`'s (i.e. `AbstractVector`'s pointing to python objects), or `ChainedVector`'s with `PyArray` subcomponents (if there is more than 1 batch).
 - DataAPI's `ncol` and `nrow` accessors.
+- datetime objects convertible to `np.datetime64`. `PyArrowTable` will convert to `np.datetime64`, which will convert the timezone to UTC using the timezone specified in the original object, or using the local timezone if one is not present (see: https://stackoverflow.com/a/25163415/20471121).
 
 Does not yet support:
 
