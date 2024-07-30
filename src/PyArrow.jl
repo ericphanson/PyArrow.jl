@@ -8,6 +8,7 @@ using Reexport: @reexport
 using Tables: Tables
 using DataAPI: DataAPI
 using SentinelArrays: ChainedVector
+using Dates: unix2datetime
 
 @reexport using PythonCall
 
@@ -27,6 +28,7 @@ export pyarrow, PyArrowTable
 
 const pyarrow = PythonCall.pynew()
 const numpy = PythonCall.pynew()
+const np = numpy # alias
 
 function __init__()
     PythonCall.pycopy!(pyarrow, pyimport("pyarrow"))

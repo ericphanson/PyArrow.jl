@@ -33,6 +33,8 @@ These are zero-copy when possible, but it is not guaranteed. See the [tests](./t
 
 ## Examples
 
+Note: see the tests for some more examples, especially with more Julia interop.
+
 Here we translate some of the [Getting Started](https://arrow.apache.org/docs/python/getstarted.html) pyarrow docs.
 
 First, constructing a table with a list-of-lists:

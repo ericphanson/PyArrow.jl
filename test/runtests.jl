@@ -5,8 +5,11 @@ using DataAPI
 using DataFrames
 using CondaPkg
 using SentinelArrays
+using Dates
 
 const pa = pyarrow
+const feather = pyimport("pyarrow.feather")
+TEST_TABLES = joinpath(pkgdir(PyArrow, "test", "test_tables"))
 
 # Print packages for CI logs
 CondaPkg.withenv() do
@@ -71,16 +74,46 @@ end
     @test_broken isequal(Tables.getcolumn(t, :b)[3], "no")
 
     # Multiple record batches
-    data = (; f0 = @py([1, 2, 3, 4]),
-        f1 = @py(["foo", "bar", "baz", nothing]),
-        f2 = @py([true, nothing, false, true]))
+    data = (; f0=@py([1, 2, 3, 4]),
+            f1=@py(["foo", "bar", "baz", nothing]),
+            f2=@py([true, nothing, false, true]))
     batch = pa.RecordBatch.from_arrays(pylist(data), @py(["f0", "f1", "f2"]))
     table = pa.Table.from_batches(pylist([batch for _ in 1:5]))
     @test pyconvert(Bool, table[0].num_chunks == 5)
     jl_table = PyArrowTable(table)
     @test Tables.getcolumn(jl_table, :f0) isa ChainedVector
     @test eltype(Tables.getcolumn(jl_table, :f0)) == Int
-    @test collect(Tables.getcolumn(jl_table, :f0)) == repeat([1,2,3,4], 5)
+    @test collect(Tables.getcolumn(jl_table, :f0)) == repeat([1, 2, 3, 4], 5)
+end
+
+@testset "datetimes" begin
+    # failed in the wild:
+    table = feather.read_table(joinpath(TEST_TABLES, "datetimes.arrow"))
+    pat = PyArrowTable(table)
+    cols = Tables.columntable(pat)
+    dates = map(x -> pyconvert(DateTime, x), cols[2])
+    @test all(x -> x isa DateTime, dates)
+    @test dates[1] == DateTime("2024-01-03T22:05:33.470")
+    t = pyconvert(Time, cols[3][1])
+    @test t == Time(21, 34, 15)
+    @test all(x -> Bool(x == pybuiltins.None), cols[4])
+
+    # DataFrames use slightly different paths than `Tables.columntable`
+    # so check we can construct one as well:
+    df = DataFrame(pat)
+    @test df isa DataFrame
+    df_jl = mapcols(v -> pyconvert.(Any, v), df)
+    @test df_jl[!, 2] isa Vector{DateTime}
+
+    # Now let us insert a missing in the middle of a DateTime column and see if we can roundtrip it
+    col = df_jl[!, 2]
+    df_jl[!, 2] = [i == 2 ? missing : col[i] for i in eachindex(col)]
+    @test df_jl[!, 2] isa Vector{Union{Missing,DateTime}}
+    py_table = PyArrow.table(df_jl)
+    rt = DataFrame(PyArrowTable(py_table))
+    @test rt isa DataFrame
+    @test ismissing(pyconvert(Any, rt[2, 2]))
+    @test pyconvert(Any, rt[3, 2]) isa DateTime
 end
 
 @testset "README examples" begin
