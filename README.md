@@ -22,9 +22,11 @@ PyArrow.jl was primarily written to make it easier to test Julia packages (like 
 
 Even if you are using PythonCall.jl already and are getting an Arrow-format table via Python code (e.g. Snowflake connector), if you want to use it from Julia, it may be better to use Arrow.jl. After all, Arrow is a great IPC format. For example:
 
-```julia
- # Simulate obtaining a pyarrow table in python; here we just read it off disk and write it to a buffer:
-julia> table = feather.read_table(joinpath(TEST_TABLES, "datetimes.arrow"))
+```julia-repl
+# Simulate obtaining a pyarrow table in python; here we just read it off disk and write it to a buffer:
+julia> feather = pyimport("pyarrow.feather");
+
+julia> table = feather.read_table(joinpath(pkgdir(PyArrow, "test", "test_tables"), "datetimes.arrow"))
 Python:
 pyarrow.Table
 ID: string
