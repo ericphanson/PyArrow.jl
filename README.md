@@ -18,9 +18,9 @@ See [Arrow.jl](https://github.com/apache/arrow-julia) for a pure-Julia alternati
 
 [Arrow.jl](https://github.com/apache/arrow-julia) provides a Julia-native implementation of reading and writing the Arrow spec, and in most cases PyArrow.jl should only be used if Arrow.jl cannot be for some reason.
 
-PyArrow.jl was primarily written to make it easier to test Julia packages (like Arrow.jl) against pyarrow by providing a convenient wrapper. It can also be used to read/write arrow (and parquet) files from Julia and interop with python, but this package is immature compared to Arrow.jl, and unfortunately marshalling types like datetimes between julia and python is not always easy.
+PyArrow.jl was primarily written to make it easier to test Julia packages (like Arrow.jl) against pyarrow by providing a convenient wrapper. It can also be used to read/write arrow (and parquet) files from Julia and interop with python, but this package is immature compared to Arrow.jl, and unfortunately marshalling types like datetimes between Julia and Python is not always easy.
 
-Even if you are using PythonCall.jl already and are getting an Arrow-format table via python code (e.g. snowflake connector), if you want to use it from Julia, it may be better to use Arrow.jl. After all, Arrow is a great IPC format. For example:
+Even if you are using PythonCall.jl already and are getting an Arrow-format table via Python code (e.g. Snowflake connector), if you want to use it from Julia, it may be better to use Arrow.jl. After all, Arrow is a great IPC format. For example:
 
 ```julia
  # Simulate obtaining a pyarrow table in python; here we just read it off disk and write it to a buffer:
